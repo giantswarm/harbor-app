@@ -1,0 +1,57 @@
+{{- if .Values.chartmuseum.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "harbor.chartmuseum" . }}-psp
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: chartmuseum
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - {{ template "harbor.chartmuseum" . }}-psp
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "harbor.chartmuseum" . }}-psp
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: chartmuseum
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "harbor.chartmuseum" . }}-psp
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: {{ template "harbor.chartmuseum" . }}-psp
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: chartmuseum
+spec:
+  allowPrivilegeEscalation: false
+  fsGroup:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - emptyDir
+  - secret
+  - configMap
+  - persistentVolumeClaim
+{{- end }}
