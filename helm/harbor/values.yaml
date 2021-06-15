@@ -480,6 +480,10 @@ notary:
   # They will be generated if not set.
   secretName: ""
 
+# If PodSecurityPolicy has to be created or not.
+psp:
+  enabled: true
+  
 database:
   # if external database is used, set "type" to "external"
   # and fill the connection informations in "external" section
