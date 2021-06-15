@@ -1,9 +1,9 @@
-[![CircleCI](https://circleci.com/gh/giantswarm/{APP-NAME}-app.svg?style=shield)](https://circleci.com/gh/giantswarm/{APP-NAME}-app)
+[![CircleCI](https://circleci.com/gh/giantswarm/harbor-app.svg?style=shield)](https://circleci.com/gh/giantswarm/harbor-app)
 
-# {APP-NAME} chart
+# harbor chart
 
-Giant Swarm offers a {APP-NAME} App which can be installed in workload clusters.
-Here we define the {APP-NAME} chart with its templates and default configuration.
+Giant Swarm offers a Harbor App which can be installed in workload clusters.
+Here we define the Harbor chart with its templates and default configuration.
 
 **What is this app?**
 **Why did we add it?**
@@ -50,15 +50,15 @@ See our [full reference page on how to configure applications](https://docs.gian
 
 This app has been tested to work with the following workload cluster release versions:
 
-*
+* AWS, Azure and KVM 14.x.x versions.
 
 ## Limitations
 
 Some apps have restrictions on how they can be deployed.
 Not following these limitations will most likely result in a broken deployment.
 
-*
+* It requires to run an ingress controller to allow the portal to be accessible.
 
 ## Credit
 
-* {APP HELM REPOSITORY}
+* [Official repository](https://github.com/goharbor/harbor-helm)
