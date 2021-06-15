@@ -176,62 +176,62 @@ persistence:
     type: filesystem
     filesystem:
       rootdirectory: /storage
-      #maxthreads: 100
+      # maxthreads: 100
     azure:
       accountname: accountname
       accountkey: base64encodedaccountkey
       container: containername
-      #realm: core.windows.net
+      # realm: core.windows.net
     gcs:
       bucket: bucketname
       # The base64 encoded json file which contains the key
       encodedkey: base64-encoded-json-key-file
-      #rootdirectory: /gcs/object/name/prefix
-      #chunksize: "5242880"
+      # rootdirectory: /gcs/object/name/prefix
+      # chunksize: "5242880"
     s3:
       region: us-west-1
       bucket: bucketname
-      #accesskey: awsaccesskey
-      #secretkey: awssecretkey
-      #regionendpoint: http://myobjects.local
-      #encrypt: false
-      #keyid: mykeyid
-      #secure: true
-      #v4auth: true
-      #chunksize: "5242880"
-      #rootdirectory: /s3/object/name/prefix
-      #storageclass: STANDARD
+      # accesskey: awsaccesskey
+      # secretkey: awssecretkey
+      # regionendpoint: http://myobjects.local
+      # encrypt: false
+      # keyid: mykeyid
+      # secure: true
+      # v4auth: true
+      # chunksize: "5242880"
+      # rootdirectory: /s3/object/name/prefix
+      # storageclass: STANDARD
     swift:
       authurl: https://storage.myprovider.com/v3/auth
       username: username
       password: password
       container: containername
-      #region: fr
-      #tenant: tenantname
-      #tenantid: tenantid
-      #domain: domainname
-      #domainid: domainid
-      #trustid: trustid
-      #insecureskipverify: false
-      #chunksize: 5M
-      #prefix:
-      #secretkey: secretkey
-      #accesskey: accesskey
-      #authversion: 3
-      #endpointtype: public
-      #tempurlcontainerkey: false
-      #tempurlmethods:
+      # region: fr
+      # tenant: tenantname
+      # tenantid: tenantid
+      # domain: domainname
+      # domainid: domainid
+      # trustid: trustid
+      # insecureskipverify: false
+      # chunksize: 5M
+      # prefix:
+      # secretkey: secretkey
+      # accesskey: accesskey
+      # authversion: 3
+      # endpointtype: public
+      # tempurlcontainerkey: false
+      # tempurlmethods:
     oss:
       accesskeyid: accesskeyid
       accesskeysecret: accesskeysecret
       region: regionname
       bucket: bucketname
-      #endpoint: endpoint
-      #internal: false
-      #encrypt: false
-      #secure: true
-      #chunksize: 10M
-      #rootdirectory: rootdirectory
+      # endpoint: endpoint
+      # internal: false
+      # encrypt: false
+      # secure: true
+      # chunksize: 10M
+      # rootdirectory: rootdirectory
 
 imagePullPolicy: IfNotPresent
 
@@ -240,9 +240,9 @@ imagePullSecrets:
 #  - name: docker-registry-secret
 #  - name: internal-registry-secret
 
-# The update strategy for deployments with persistent volumes(jobservice, registry 
+# The update strategy for deployments with persistent volumes(jobservice, registry
 # and chartmuseum): "RollingUpdate" or "Recreate"
-# Set it as "Recreate" when "RWM" for volumes isn't supported 
+# Set it as "Recreate" when "RWM" for volumes isn't supported
 updateStrategy:
   type: RollingUpdate
 
@@ -483,7 +483,7 @@ notary:
 # If PodSecurityPolicy has to be created or not.
 psp:
   enabled: true
-  
+
 database:
   # if external database is used, set "type" to "external"
   # and fill the connection informations in "external" section
