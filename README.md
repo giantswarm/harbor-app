@@ -31,7 +31,12 @@ There are 3 ways to install this app onto a workload cluster.
 **This is an example of a values file you could upload using our web interface.**
 ```
 # values.yaml
-
+expose:
+  tls:
+    enabled: false
+  ingress:
+    hosts:
+      core: harbor.example.com
 ```
 
 ### Sample App CR and ConfigMap for the management cluster
