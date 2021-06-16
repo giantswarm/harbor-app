@@ -102,6 +102,7 @@ jobs:
       - gather_facts
       - install_architect
     env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       architect_flags: "--organisation ${{ github.repository_owner }} --project ${{ github.event.repository.name }}"
     steps:
       - name: Cache
