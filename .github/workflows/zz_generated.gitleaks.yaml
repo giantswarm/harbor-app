@@ -1,6 +1,10 @@
 # DO NOT EDIT. Generated with:
 #
+<<<<<<< HEAD
 #    devctl@4.5.2-dev
+=======
+#    devctl@4.5.1
+>>>>>>> master
 #
 name: gitleaks
 
