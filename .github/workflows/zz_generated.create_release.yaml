@@ -216,6 +216,8 @@ jobs:
       - gather_facts
       - install_semver
     if: ${{ needs.gather_facts.outputs.version }}
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - name: Download semver artifact to /opt/bin
         uses: actions/download-artifact@v2
