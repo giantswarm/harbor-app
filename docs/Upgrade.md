@@ -1,4 +1,6 @@
-# Upgrade Guide
+---
+title: Upgrade Guide
+---
 
 This guide is used to upgrade Harbor deployed by chart since version 0.3.0.
 
@@ -29,7 +31,7 @@ Configure the new chart to make sure that the configuration items have the same 
     kubectl get secret
     ```
 
-    Find the secret whose name ends with `-harbor-ingress` (expose service via `Ingress`) or `-harbor-nginx`(expose service via `ClusterIP` or `NodePort`)
+    Find the secret whose name ends with `-ingress` (expose service via `Ingress`) or `-harbor-nginx`(expose service via `ClusterIP` or `NodePort`)
 
 2) Export the secret as yaml file:
 
@@ -48,7 +50,7 @@ Configure the new chart to make sure that the configuration items have the same 
     kubectl create -f secret.yaml
     ```
 
-5) Configure the chart to use the new secret by setting `expose.tls.secretName` as the value you set in step **3**
+5) Configure the chart to use the new secret by setting `expose.tls.certSource` as `secret` and `expose.tls.secret.secretName` as the value you set in step **3**
 
 ### 4. Upgrade
 
@@ -63,3 +65,5 @@ helm upgrade release-name --force .
 ## Known issues
 
 - The job logs will be lost if you upgrade from version 0.3.0 as the logs are store in a `emptyDir` in 0.3.0.
+- Installing the Harbor chart(1.6-) with a release name that contains `harbor`, e.g. `my-harbor`, and trying to upgrade it to 1.7+ you will get the issue https://github.com/goharbor/harbor-helm/issues/987.  
+  The workaround is performing the upgrade by setting the configuration `fullnameOverride` with value `release_name-harbor`, e.g. `my-harbor-harbor`, in `values.yaml` or `--set` option

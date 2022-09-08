@@ -1,4 +1,6 @@
-# Harbor High Availability Guide
+---
+title: Harbor High Availability Guide
+---
 
 ## Goal
 
@@ -6,8 +8,8 @@ Deploy Harbor on K8S via helm to make it highly available, that is, if one of no
 
 ## Prerequisites
 
-- Kubernetes cluster 1.10+
-- Helm 2.8.0+
+- Kubernetes cluster 1.20+
+- Helm v3.2.0+
 - High available ingress controller (Harbor does not manage the external endpoint)
 - High available PostgreSQL database (Harbor does not handle the deployment of HA of database)
 - High available Redis (Harbor does not handle the deployment of HA of Redis)
@@ -43,7 +45,7 @@ Configure the followings items in `values.yaml`, you can also set them as parame
 - **External PostgreSQL**
    Set the `database.type` to `external` and fill the information in `database.external` section.
 
-   Four empty databases should be created manually for `Harbor core`, `Clair`, `Notary server` and `Notary signer` and configure them in the section. Harbor will create tables automatically when starting up.
+   Four empty databases should be created manually for `Harbor core`, `Notary server` and `Notary signer` and configure them in the section. Harbor will create tables automatically when starting up.
 - **External Redis**
    Set the `redis.type` to `external` and fill the information in `redis.external` section.
 
@@ -57,20 +59,14 @@ Configure the followings items in `values.yaml`, you can also set them as parame
 
    You can also use the existing PVCs to store data, set `persistence.persistentVolumeClaim.registry.existingClaim`, `persistence.persistentVolumeClaim.chartmuseum.existingClaim` and `persistence.persistentVolumeClaim.jobservice.existingClaim`.
 
-   If you have no PVCs that can be shared across nodes, you can use external object storage to store images and charts and store the job logs in database. Set the `persistence.imageChartStorage.type` to the value you want to use and fill the corresponding section and set `jobservice.jobLogger` to `database`.
+   If you have no PVCs that can be shared across nodes, you can use external object storage to store images and charts and store the job logs in database. Set the `persistence.imageChartStorage.type` to the value you want to use and fill the corresponding section and set `jobservice.jobLoggers` to `database`.
 
 - **Replica**
-   Set `portal.replicas`, `core.replicas`, `jobservice.replicas`, `registry.replicas`, `chartmuseum.replicas`, `clair.replicas`, `notary.server.replicas` and `notary.signer.replicas` to `n`(`n`>=2).
+   Set `portal.replicas`, `core.replicas`, `jobservice.replicas`, `registry.replicas`, `chartmuseum.replicas`, `notary.server.replicas` and `notary.signer.replicas` to `n`(`n`>=2).
 
 ### Installation
 
 Install the Harbor helm chart with a release name `my-release`:  
-
-helm 2:
-```bash
-helm install --name my-release .
-```
-helm 3:
 ```
 helm install my-release .
 ```
