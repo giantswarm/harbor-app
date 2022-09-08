@@ -1,4 +1,5 @@
 {{- if and (ne .Values.expose.type "ingress") .Values.expose.tls.enabled }}
+{{- $scheme := (include "harbor.component.scheme" .) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,7 +12,7 @@ data:
     pid /tmp/nginx.pid;
 
     events {
-      worker_connections 1024;
+      worker_connections 3096;
       use epoll;
       multi_accept on;
     }
@@ -28,11 +29,11 @@ data:
       proxy_http_version 1.1;
 
       upstream core {
-        server {{ template "harbor.core" . }};
+        server "{{ template "harbor.core" . }}:{{ template "harbor.core.servicePort" . }}";
       }
 
       upstream portal {
-        server {{ template "harbor.portal" . }};
+        server "{{ template "harbor.portal" . }}:{{ template "harbor.portal.servicePort" . }}";
       }
 
       {{- if .Values.notary.enabled }}
@@ -40,7 +41,7 @@ data:
         server {{ template "harbor.notary-server" . }}:4443;
       }
       {{- end }}
-      
+
       log_format timed_combined '[$time_local]:$remote_addr - '
         '"$request" $status $body_bytes_sent '
         '"$http_referer" "$http_user_agent" '
@@ -48,23 +49,33 @@ data:
 
       access_log /dev/stdout timed_combined;
 
+      map $http_x_forwarded_proto $x_forwarded_proto {
+        default $http_x_forwarded_proto;
+        ""      $scheme;
+      }
+
       {{- if .Values.notary.enabled }}
       server {
+        {{- if .Values.ipFamily.ipv4.enabled }}
         listen 4443 ssl;
+        {{- end}}
+        {{- if .Values.ipFamily.ipv6.enabled}}
+        listen [::]:4443 ssl;
+        {{- end }}
         server_tokens off;
         # ssl
         ssl_certificate /etc/nginx/cert/tls.crt;
         ssl_certificate_key /etc/nginx/cert/tls.key;
-      
+
         # recommendations from https://raymii.org/s/tutorials/strong_ssl_security_on_nginx.html
-        ssl_protocols tlsv1.1 tlsv1.2;
+        ssl_protocols tlsv1.2;
         ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';
         ssl_prefer_server_ciphers on;
         ssl_session_cache shared:ssl:10m;
-      
+
         # disable any limits to avoid http 413 for large image uploads
         client_max_body_size 0;
-      
+
         # required to avoid http 411: see issue #1486 (https://github.com/docker/docker/issues/1486)
         chunked_transfer_encoding on;
 
@@ -73,9 +84,7 @@ data:
           proxy_set_header Host $http_host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-          # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
           proxy_buffering off;
           proxy_request_buffering off;
@@ -84,22 +93,27 @@ data:
       {{- end }}
 
       server {
+        {{- if .Values.ipFamily.ipv4.enabled }}
         listen 8443 ssl;
+        {{- end}}
+        {{- if .Values.ipFamily.ipv6.enabled }}
+        listen [::]:8443 ssl;
+        {{- end }}
     #    server_name harbordomain.com;
         server_tokens off;
         # SSL
         ssl_certificate /etc/nginx/cert/tls.crt;
         ssl_certificate_key /etc/nginx/cert/tls.key;
-      
+
         # Recommendations from https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
-        ssl_protocols TLSv1.1 TLSv1.2;
+        ssl_protocols TLSv1.2;
         ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';
         ssl_prefer_server_ciphers on;
         ssl_session_cache shared:SSL:10m;
-      
+
         # disable any limits to avoid HTTP 413 for large image uploads
         client_max_body_size 0;
-      
+
         # required to avoid HTTP 411: see Issue #1486 (https://github.com/docker/docker/issues/1486)
         chunked_transfer_encoding on;
 
@@ -109,13 +123,11 @@ data:
         add_header Content-Security-Policy "frame-ancestors 'none'";
 
         location / {
-          proxy_pass http://portal/;
+          proxy_pass {{ $scheme }}://portal/;
           proxy_set_header Host $http_host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          
-          # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
           proxy_cookie_path / "/; HttpOnly; Secure";
 
@@ -124,28 +136,32 @@ data:
         }
 
         location /api/ {
-          proxy_pass http://core/api/;
+          proxy_pass {{ $scheme }}://core/api/;
+        {{- if and .Values.internalTLS.enabled }}
+          proxy_ssl_verify        off;
+          proxy_ssl_session_reuse on;
+        {{- end }}
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-          # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
           proxy_cookie_path / "/; Secure";
-          
+
           proxy_buffering off;
           proxy_request_buffering off;
         }
-        
+
         location /chartrepo/ {
-          proxy_pass http://core/chartrepo/;
+          proxy_pass {{ $scheme }}://core/chartrepo/;
+        {{- if and .Values.internalTLS.enabled }}
+          proxy_ssl_verify        off;
+          proxy_ssl_session_reuse on;
+        {{- end }}
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-          # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
           proxy_cookie_path / "/; Secure";
 
@@ -154,13 +170,11 @@ data:
         }
 
         location /c/ {
-          proxy_pass http://core/c/;
+          proxy_pass {{ $scheme }}://core/c/;
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-          # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
           proxy_cookie_path / "/; Secure";
 
@@ -173,41 +187,41 @@ data:
         }
 
         location /v2/ {
-          proxy_pass http://core/v2/;
+          proxy_pass {{ $scheme }}://core/v2/;
           proxy_set_header Host $http_host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          
-          # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
           proxy_buffering off;
           proxy_request_buffering off;
         }
 
         location /service/ {
-          proxy_pass http://core/service/;
+          proxy_pass {{ $scheme }}://core/service/;
           proxy_set_header Host $http_host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          
-          # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
-          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
 
           proxy_cookie_path / "/; Secure";
 
           proxy_buffering off;
           proxy_request_buffering off;
         }
-      
+
       location /service/notifications {
           return 404;
         }
       }
         server {
+          {{- if .Values.ipFamily.ipv4.enabled }}
           listen 8080;
+          {{- end}}
+          {{- if .Values.ipFamily.ipv6.enabled }}
+          listen [::]:8080;
+          {{- end}}
           #server_name harbordomain.com;
           return 301 https://$host$request_uri;
-      } 
+      }
     }
 {{- end }}
-    
