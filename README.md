@@ -1,5 +1,7 @@
 [![CircleCI](https://circleci.com/gh/giantswarm/harbor-app.svg?style=shield)](https://circleci.com/gh/giantswarm/harbor-app)
 
+> ⚠️ NOTE: Superseded by https://github.com/giantswarm/harbor-operator-app and https://github.com/giantswarm/harbor-config-operator
+
 # harbor chart
 
 Giant Swarm offers a Harbor App which can be installed in workload clusters.
